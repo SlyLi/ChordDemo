@@ -70,7 +70,7 @@ namespace MetroDemo.lib
             fileSize = size;
             fileType = type;
             sha1Code = key.GetSha1Code();
-            AddSource(Common.GetLocalIP().ToString(), path);
+            AddSource(GetLocalIP().ToString(), path);
             saveSize = fileSize;
 
 
