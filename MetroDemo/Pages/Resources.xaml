@@ -1,0 +1,49 @@
+﻿<UserControl x:Class="MetroDemo.Pages.Resources"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MetroDemo.Pages"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <ScrollViewer
+               Focusable="False"
+               HorizontalScrollBarVisibility="Disabled"
+               VerticalScrollBarVisibility="Auto">
+
+
+            <ListView Margin="3" Name="sourcesList"
+                          SelectedIndex="0"
+                      MouseDoubleClick="sourcesList_MouseDoubleClick"
+                          Style="{StaticResource VirtualisedMetroListView}">
+                <ListView.View>
+                    <GridView >
+                        <GridViewColumn Width="200" DisplayMemberBinding="{Binding keyName}" Header="Key" />
+                        <GridViewColumn Width="100" DisplayMemberBinding="{Binding fileSize}" Header="大小(Byte)" />
+                        <GridViewColumn Width="50" DisplayMemberBinding="{Binding fileType}" Header="类型" />
+                        <GridViewColumn Width="350" DisplayMemberBinding="{Binding sha1Code}" Header="SHA1" />
+                    </GridView>
+                </ListView.View>
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="下载" Click="DownloadSource_Click">
+                        </MenuItem>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+            </ListView>
+        </ScrollViewer>
+
+        <Button Width="48"
+                        Height="48"
+                        Margin="6"
+                        Style="{StaticResource AccentCircleButtonStyle}" 
+                Click="FreshResource_Click"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" >
+            <iconPacks:PackIconMaterial Width="20"
+                                              Height="20"
+                                              Kind="Refresh" />
+        </Button>
+    </Grid>
+</UserControl>
