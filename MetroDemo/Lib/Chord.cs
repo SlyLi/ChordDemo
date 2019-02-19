@@ -105,7 +105,7 @@ namespace MetroDemo.lib
                 do
                 {
                     int readBytes = 0;
-                    Byte[] buffer = new Byte[4];
+                    Byte[] buffer = new Byte[intToByteLength];
                     stream.Read(buffer, 0, buffer.Length);
                     int size = BitConverter.ToInt32(buffer, 0);
 
@@ -251,14 +251,16 @@ namespace MetroDemo.lib
 
 
                 case DatagramType.downloadFile:
-                    path = datagram.Message;
-                    
+                    int index = int.Parse(datagram.Message.Split(new Char[] { ',' },2)[0]);
+                    path = datagram.Message.Split(new Char[] { ',' }, 2)[1];
+
                     if (File.Exists(path))
                     {
                         FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+                        fileStream.Seek((long)index * blockSize, SeekOrigin.Begin);
                         int readSize = 0;
-                        long fileSize = 0;
-                        while(fileSize<fileStream.Length)
+                        int fileSize = 0;
+                        while(fileSize<blockSize)
                         {
                             ret = new byte[2048];
                             readSize = fileStream.Read(ret, 0, ret.Length);

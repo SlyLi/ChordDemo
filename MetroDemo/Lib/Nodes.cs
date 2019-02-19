@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -64,6 +65,16 @@ namespace MetroDemo.lib
 
     public class Node
     {
+        public enum NodeStatus
+        {
+            noSource,   //没有可用的上传者
+            downloaded, //下载完成  
+            downloading,    //正在下载  
+            pause,  //暂停
+
+        }
+
+
         public Node(string key,string size, string path,string type)
         {       
             keyName = key;
@@ -71,7 +82,6 @@ namespace MetroDemo.lib
             fileType = type;
             sha1Code = key.GetSha1Code();
             AddSource(GetLocalIP().ToString(), path);
-            saveSize = fileSize;
 
 
         }
@@ -81,7 +91,6 @@ namespace MetroDemo.lib
             sha1Code = key.GetSha1Code();
             fileSize = size;
             fileType = type;
-            saveSize = fileSize;
         }
 
         public Node(string key, string size, string type,string save,int i) //i的值没有用处，只用于区分功能
@@ -90,14 +99,43 @@ namespace MetroDemo.lib
             sha1Code = key.GetSha1Code();
             fileSize = size;
             fileType = type;
-            saveSize = save;
         }
 
         public string keyName { set; get; }
         public string fileSize {  get; }
         public string sha1Code {  get; }
         public string fileType { set; get; }
-        public string saveSize { set; get; }
+        public NodeStatus status { private set; get; }
+        public Source[] blockSource = null;
+        public bool[] blocks = null;
+
+        public List<Source> sources = new List<Source>();
+
+        public int blockNum => (int)Math.Ceiling((double)long.Parse(fileSize) / blockSize);
+
+        public string saveSize {
+            get
+            {
+                if (blocks == null)
+                    return "0";
+                int done = 0;
+                for(int i=0;i<blockNum;i++)
+                {
+                    if (blocks[i] == true)
+                        done++;
+                }
+                if (done == blockNum)
+                {
+                    status = NodeStatus.downloaded;
+                    return fileSize;
+                }
+                else
+                    return ((long)done * blockSize).ToString();
+                 
+            }
+        }
+
+
         public double progressValue
         {
             get
@@ -105,7 +143,92 @@ namespace MetroDemo.lib
                 return long.Parse(saveSize) * 100 / long.Parse(fileSize);
             }
         }
-        public List<Source> sources = new List<Source>();
+       
+
+
+        public void PrepareDownload()
+        {
+            blockSource = new Source[blockNum];
+            blocks = new bool[blockNum];
+            for (int i = 0; i < blockNum; i++)
+                blocks[i] = false;
+
+            status = NodeStatus.downloading;
+            
+        }
+
+        public void PrepareSources()
+        {
+            List<Source> soc = getUsefulSources();
+            int count = soc.Count;
+            int j = 0;
+            if(count==0)
+            {
+                status = NodeStatus.noSource;
+            }
+            else
+            {
+                for(int i=0;i<blockNum;i++)
+                {
+                    sources[i] = soc[j++];
+                    if (j == count)
+                        j = 0;
+                }
+            }
+
+        }
+
+        public void DownloadContinue()
+        {
+            status = NodeStatus.downloading;
+        }
+
+
+        public List<Source> getUsefulSources()
+        {
+            List<Source> soc = new List<Source>();
+            foreach(var source in sources)
+            {
+                TcpClient client = new TcpClient();
+                client.Connect(source.sourceIP, port);
+                NetworkStream stream = client.GetStream();
+                Datagram datagram = new Datagram
+                {
+                    Type = DatagramType.isFileAvailable,
+                    Message =this.ToString()
+                };
+                byte[] data = datagram.ToByte();
+                stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
+                stream.Write(data, 0, data.Length);
+
+                if (stream.CanRead)
+                {
+                    int readBytes = 0;
+                    Byte[] buffer = new Byte[intToByteLength];
+                    stream.Read(buffer, 0, buffer.Length);
+                    int size = BitConverter.ToInt32(buffer, 0);
+                    buffer = new Byte[size];
+                    readBytes = stream.Read(buffer, 0, buffer.Length);
+                    if (readBytes == size)
+                    {
+                        datagram = Datagram.Convert(buffer, size);
+
+                        if (datagram.Type == DatagramType.fileAvailable)
+                        {
+                            soc.Add(source);
+                        }                       
+                    }
+                }
+                client.Close();
+                stream.Close();
+            }
+            return soc;
+
+        }
+
+
+
+
 
         public void AddSource(string ip,string path)
         {

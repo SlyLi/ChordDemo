@@ -30,6 +30,8 @@ namespace MetroDemo.lib
         public const int port = 4444;
         public const int intToByteLength = 4;
         public const int replayPort = 4448;
+        public const int blockSize = 1024 * 4096;
+
 
         public static IPAddress GetLocalIP()
         {
