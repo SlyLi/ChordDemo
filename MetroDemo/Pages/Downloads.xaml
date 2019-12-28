@@ -8,21 +8,23 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
+
         <ScrollViewer
                Focusable="False"
                HorizontalScrollBarVisibility="Disabled"
                VerticalScrollBarVisibility="Auto">
 
             <ListView Margin="3" Name="DownloadList"
-                          SelectedIndex="0"
+                          SelectedIndex="1"
+                       
                           Style="{StaticResource VirtualisedMetroListView}">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Width="150" DisplayMemberBinding="{Binding keyName}" Header="Key" />
-                        <GridViewColumn Width="100" DisplayMemberBinding="{Binding fileSize}" Header="大小(Byte)" />
+                        <GridViewColumn Width="120" DisplayMemberBinding="{Binding keyName}" Header="Key" />
+                        <GridViewColumn Width="80" DisplayMemberBinding="{Binding fileSize}" Header="大小(Byte)" />
                         <GridViewColumn Width="50" DisplayMemberBinding="{Binding fileType}" Header="类型" />
-                        <GridViewColumn Width="350" DisplayMemberBinding="{Binding sha1Code}" Header="SHA1" />
-
+                        <GridViewColumn Width="300" DisplayMemberBinding="{Binding sha1Code}" Header="SHA1" />
+                        <GridViewColumn Width="100" DisplayMemberBinding="{Binding status}" Header="状态" />
                         <GridViewColumn Width="120"  Header="进度">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate >
@@ -32,8 +34,18 @@
 
                         </GridViewColumn>
 
+
                     </GridView>
                 </ListView.View>
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="暂停下载" Click="PauseDownload_Click">
+                        </MenuItem>
+                        <MenuItem Header="继续下载" Click="ContinueDownload_Click">
+                        </MenuItem>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+                
             </ListView>
         </ScrollViewer>
 
@@ -49,3 +61,4 @@
         </Button>
     </Grid>
 </UserControl>
+

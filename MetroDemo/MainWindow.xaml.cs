@@ -31,32 +31,41 @@ namespace MetroDemo
             chord = new Chord();
             userInfo = new UserInfo();
             userInfo.AddNodesToChord(chord);
-           
-
+  
             InitializeComponent();
+            InitPages();
         }
+
+        private void InitPages()
+        {
+            HamburgerMenuItemCollection pages = HamburgerMenuControl.ItemsSource as HamburgerMenuItemCollection;
+           
+            foreach(var page in pages)
+            {
+                BaseInterface page_tag = page.Tag as BaseInterface;
+                if (page_tag != null)
+                {
+                    if (page_tag.chord == null)
+                        page_tag.chord = chord;
+                    if (page_tag.userInfo == null)
+                        page_tag.userInfo = userInfo;
+                    page_tag.InitThis();
+                }
+            }
+                
+        }
+
 
         private void HamburgerMenuControl_OnItemInvoked(object sender, HamburgerMenuItemInvokedEventArgs e)
         {
             HamburgerMenuControl.Content = e.InvokedItem;
             BaseInterface page = ((HamburgerMenuIconItem)e.InvokedItem).Tag as BaseInterface;
             if(page != null )
-            {
-                if (page.chord == null)
-                    page.chord = chord;
-                if (page.userInfo == null)
-                    page.userInfo = userInfo;
+            {      
                 page.InitThis();
             }
-
-            Downloads downloads = page as Downloads;
-            if (downloads != null)
-            {
-                downloads.FreshDownload();
-            }
+       
         }
 
-
-      
     }
 }

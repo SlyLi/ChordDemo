@@ -13,7 +13,6 @@
                HorizontalScrollBarVisibility="Disabled"
                VerticalScrollBarVisibility="Auto">
 
-
             <ListView Margin="3" Name="sourcesList"
                           SelectedIndex="0"
                       MouseDoubleClick="sourcesList_MouseDoubleClick"

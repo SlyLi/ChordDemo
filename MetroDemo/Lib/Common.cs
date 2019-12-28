@@ -28,30 +28,88 @@ namespace MetroDemo.lib
     {
         public const int hashBit=160;
         public const int port = 4444;
+        public const int udp_port = 4445;
         public const int intToByteLength = 4;
         public const int replayPort = 4448;
-        public const int blockSize = 1024 * 4096;
+        public const int blockSize = 20 * 1024 * 1024;
 
 
         public static IPAddress GetLocalIP()
         {
-         /*   string hostName = Dns.GetHostName();   //获取本机名
-            IPHostEntry host;
-            host = Dns.GetHostEntry(hostName);
-
+            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (IPAddress ip in host.AddressList)
             {
-                if (ip.ToString().Substring(0, 3) == "172") //学校局域网。测试
-                    return ip;
+               // if (ip.ToString().Substring(0, 10) == "192.168.43") //局域网测试
+                //    return ip;
+               // if (ip.ToString().Substring(0, 3) == "172") //学校局域网。测试
+               //     return ip;
             }
-
-            return host.AddressList[0];*/
-           // return IPAddress.Parse("172.19.151.89");
             return IPAddress.Parse("127.0.0.1");
         }
 
         public static IPAddress GetTargetIP()       //暂时如此 待改进
         {
+            IPAddress targetIP = GetLocalIP();
+            //IPAddress targetIP = IPAddress.Parse("172.19.151.89");
+            return targetIP;    //主机
+
+            //从机 以下所有
+
+            //Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram,ProtocolType.Udp);
+            UdpClient listener = new UdpClient();
+            //IPAddress broadcast = IPAddress.Parse("192.168.43.255");    //广播地址
+            IPAddress broadcast = IPAddress.Broadcast;
+            IPEndPoint ep = new IPEndPoint(broadcast, udp_port);
+       
+            Datagram retDatagram = new Datagram
+            {
+                Type = DatagramType.whoIsActive
+            };
+            byte[] data = retDatagram.ToByte();
+            listener.Send(retDatagram.AllSize.GetBytes(), retDatagram.AllSize.GetBytes().Length, ep);
+            listener.Send(data,data.Length, ep);
+
+
+            bool done = false;
+            IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, udp_port);
+            Datagram datagram;
+            byte[] buffer;
+            int size;
+            try
+            {
+                while (!done)
+                {
+                    buffer = listener.Receive(ref groupEP);
+                    size = BitConverter.ToInt32(buffer, 0);
+                    buffer = listener.Receive(ref groupEP);
+                    if (buffer.Length == size)
+                    {
+                        datagram = Datagram.Convert(buffer, size);
+                        if (datagram.Type == DatagramType.acticeHost)
+                        {
+                            if(datagram.FromAddress!=GetLocalIP().ToString())
+                            {
+                                targetIP = IPAddress.Parse(datagram.FromAddress);
+                                done = true;
+                            }
+                            else if (datagram.FromAddress == "192.168.43.156")    //源头主机ip
+                            {
+                                targetIP = IPAddress.Parse(datagram.FromAddress);
+                                done = true;
+                            }
+                        }
+
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            finally
+            {
+                listener.Close();
+            }
             /*  string hostName = Dns.GetHostName();   //获取本机名
               IPHostEntry host;
               host = Dns.GetHostEntry(hostName);
@@ -62,8 +120,54 @@ namespace MetroDemo.lib
                       return ip;
               }
               return host.AddressList[0];*/
-            return IPAddress.Parse("127.0.0.1");
+            return targetIP;
         }
+
+        public static void UdpListener(object o)
+        {
+            bool done = false;
+            UdpClient listener = o as UdpClient;
+           // UdpClient listener = new UdpClient(udp_port);
+            IPEndPoint newEP =null;
+            Datagram datagram,retDatagram;
+            byte[] buffer;
+            byte[] data;
+            int size;
+            try
+            {
+                while (!done)
+                {
+                    buffer = listener.Receive(ref newEP);
+                    size = BitConverter.ToInt32(buffer, 0);
+                    buffer = listener.Receive(ref newEP);
+                    if(buffer.Length==size)
+                    {
+                        datagram = Datagram.Convert(buffer, size);
+                        if(datagram.Type== DatagramType.whoIsActive)
+                        {
+                            retDatagram = new Datagram
+                            {
+                                Type = DatagramType.acticeHost
+                            };
+                            data = retDatagram.ToByte();
+                            listener.Send(retDatagram.AllSize.GetBytes(), intToByteLength, newEP);
+                            listener.Send(data, data.Length, newEP);
+                        }
+
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            finally
+            {
+                listener.Close();
+            }
+
+        }
+
 
 
         #region 辅助

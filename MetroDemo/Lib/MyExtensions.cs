@@ -57,6 +57,7 @@ namespace MetroDemo.lib
 
         public static string IPsToString(this List<string> ips)
         {
+
             StringBuilder sb = new StringBuilder();
             foreach (var t in ips)
             {
@@ -65,9 +66,39 @@ namespace MetroDemo.lib
             return sb.ToString();
         }
 
+        public static string BoolsToString(this bool[] bools)
+        {
+            if (bools == null)
+                return "";
+            StringBuilder sb = new StringBuilder();
+            foreach (var t in bools)
+            {
+                if (t)
+                    sb.Append("1");
+                else
+                    sb.Append("0");
+            }
+            return sb.ToString();
+        }
+
+        public static bool[] StringToBools(this string str)
+        {
+            bool[] bools = new bool[str.Length];
+            for(int i=0;i<str.Length;i++)
+            {
+                if (str[i] == '1')
+                    bools[i] = true;
+                else
+                    bools[i] = false; 
+            }
+            return bools;
+        }
+
         public static List<string> StrConvertIPs(this string str)
         {
             List<string> ips = new List<string>();
+            if (str == "")
+                return ips;
             string[] strs = str.Split(' ');
             foreach(var temp in strs)
             {

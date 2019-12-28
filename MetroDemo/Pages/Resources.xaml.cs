@@ -50,6 +50,9 @@ namespace MetroDemo.Pages
             if (o == null)
                 return;
             Node node = o as Node;
+            node.DownloadInit();
+            userInfo.AddDownloadNode(node);
+
             DownloadBegin(chord,userInfo,node);
             //  chord.DownloadFile(node);
         }

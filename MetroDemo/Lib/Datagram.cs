@@ -117,5 +117,7 @@ namespace MetroDemo.lib
         getNodePosition,                       //获取节点位置
         freshFinTab,                           //刷新路由信息表
         getFinTab,                             //获取路由信息表
+        whoIsActive,                            //广播活动主机
+        acticeHost                              //本主机活动
     }
 }

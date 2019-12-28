@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static MetroDemo.Lib.Download;
 
 namespace MetroDemo.Pages
 {
@@ -51,11 +52,13 @@ namespace MetroDemo.Pages
                 Thread.Sleep(100);
                 DownloadList.Dispatcher.Invoke(() =>
                 {
+                    var o= DownloadList.SelectedItem;
                     DownloadList.Items.Clear();
                     foreach(var i in userInfo.DownloadNodes)
                     {
                         DownloadList.Items.Add(i);
                     }
+                    DownloadList.SelectedItem = o;
                 });
 
 
@@ -71,6 +74,26 @@ namespace MetroDemo.Pages
         public void FreshDownload()
         {
             Common.ShowNodes(DownloadList, userInfo.DownloadNodes);
+        }
+
+        private void PauseDownload_Click(object sender, RoutedEventArgs e)
+        {
+            object o = DownloadList.SelectedItem;
+            if (o == null)
+                return;
+            Node node = o as Node;
+            DownloadPause(node);
+            
+        }
+
+        private void ContinueDownload_Click(object sender, RoutedEventArgs e)
+        {
+            object o = DownloadList.SelectedItem;
+            if (o == null)
+                return;
+            Node node = o as Node;
+            DownloadContinue(chord, userInfo, node);
+
         }
 
 

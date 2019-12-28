@@ -93,12 +93,13 @@ namespace MetroDemo.lib
             fileType = type;
         }
 
-        public Node(string key, string size, string type,string save,int i) //i的值没有用处，只用于区分功能
+        public Node(string key, string size, string type,string blockStr,int i) //i的值没有用处，只用于区分功能
         {
             keyName = key;
             sha1Code = key.GetSha1Code();
             fileSize = size;
             fileType = type;
+            blocks = blockStr.StringToBools();
         }
 
         public string keyName { set; get; }
@@ -144,21 +145,22 @@ namespace MetroDemo.lib
             }
         }
        
-
-
-        public void PrepareDownload()
+        public void DownloadInit()
         {
             blockSource = new Source[blockNum];
             blocks = new bool[blockNum];
             for (int i = 0; i < blockNum; i++)
                 blocks[i] = false;
-
             status = NodeStatus.downloading;
-            
         }
+
 
         public void PrepareSources()
         {
+            if(blockSource==null)
+            {
+                blockSource = new Source[blockNum];
+            }
             List<Source> soc = getUsefulSources();
             int count = soc.Count;
             int j = 0;
@@ -170,7 +172,7 @@ namespace MetroDemo.lib
             {
                 for(int i=0;i<blockNum;i++)
                 {
-                    sources[i] = soc[j++];
+                    blockSource[i] = soc[j++];
                     if (j == count)
                         j = 0;
                 }
@@ -178,9 +180,13 @@ namespace MetroDemo.lib
 
         }
 
-        public void DownloadContinue()
+        public void DownloadStatusContinue()
         {
             status = NodeStatus.downloading;
+        }
+        public void DownloadStatusPause()
+        {
+            status = NodeStatus.pause;
         }
 
 
@@ -189,38 +195,49 @@ namespace MetroDemo.lib
             List<Source> soc = new List<Source>();
             foreach(var source in sources)
             {
+                
                 TcpClient client = new TcpClient();
-                client.Connect(source.sourceIP, port);
-                NetworkStream stream = client.GetStream();
-                Datagram datagram = new Datagram
+                try
                 {
-                    Type = DatagramType.isFileAvailable,
-                    Message =this.ToString()
-                };
-                byte[] data = datagram.ToByte();
-                stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
-                stream.Write(data, 0, data.Length);
-
-                if (stream.CanRead)
-                {
-                    int readBytes = 0;
-                    Byte[] buffer = new Byte[intToByteLength];
-                    stream.Read(buffer, 0, buffer.Length);
-                    int size = BitConverter.ToInt32(buffer, 0);
-                    buffer = new Byte[size];
-                    readBytes = stream.Read(buffer, 0, buffer.Length);
-                    if (readBytes == size)
-                    {
-                        datagram = Datagram.Convert(buffer, size);
-
-                        if (datagram.Type == DatagramType.fileAvailable)
-                        {
-                            soc.Add(source);
-                        }                       
-                    }
+                    client.Connect(source.sourceIP, port);
                 }
-                client.Close();
-                stream.Close();
+                catch (Exception)
+                {
+                //    sources.Remove(source);
+                }
+                if(client.Connected)
+                {
+                    NetworkStream stream = client.GetStream();
+                    Datagram datagram = new Datagram
+                    {
+                        Type = DatagramType.isFileAvailable,
+                        Message = this.ToString()
+                    };
+                    byte[] data = datagram.ToByte();
+                    stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
+                    stream.Write(data, 0, data.Length);
+
+                    if (stream.CanRead)
+                    {
+                        int readBytes = 0;
+                        Byte[] buffer = new Byte[intToByteLength];
+                        stream.Read(buffer, 0, buffer.Length);
+                        int size = BitConverter.ToInt32(buffer, 0);
+                        buffer = new Byte[size];
+                        readBytes = stream.Read(buffer, 0, buffer.Length);
+                        if (readBytes == size)
+                        {
+                            datagram = Datagram.Convert(buffer, size);
+
+                            if (datagram.Type == DatagramType.fileAvailable)
+                            {
+                                soc.Add(source);
+                            }
+                        }
+                    }
+                    client.Close();
+                    stream.Close();
+                }
             }
             return soc;
 
@@ -264,7 +281,7 @@ namespace MetroDemo.lib
             sb.AppendFormat("fileSize▷{0}◁", fileSize);
             sb.AppendFormat("fileType▷{0}◁", fileType);
             sb.AppendFormat("sources▷{0}◁", sourcesSb);
-            sb.AppendFormat("saveSize▷{0}", saveSize);
+            sb.AppendFormat("blocks▷{0}", blocks.BoolsToString());
 
             return sb.ToString();
         }
@@ -279,7 +296,15 @@ namespace MetroDemo.lib
                 string[] info = strlist[i].Split('▷');
                 idict.Add(info[0], info[1]);
             }
-            Node node = new Node(idict["keyName"], idict["fileSize"],idict["fileType"],idict["saveSize"],1);
+            Node node;
+            if (idict["blocks"]=="")
+            {
+                node = new Node(idict["keyName"], idict["fileSize"], idict["fileType"]);
+            }
+            else
+            {
+                node = new Node(idict["keyName"], idict["fileSize"], idict["fileType"], idict["blocks"], 1);
+            }
 
             string[] sourcesRow = idict["sources"].Split('■');
             for(int i=0;i<sourcesRow.Length/2;i++)

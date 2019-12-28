@@ -137,7 +137,7 @@
                                     VerticalScrollBarOnLeftSide="False" ScrollViewer.HorizontalScrollBarVisibility="Visible" Content="">
                 <!--  Items  -->
                 <Controls:HamburgerMenu.ItemsSource>
-                    <Controls:HamburgerMenuItemCollection>
+                    <Controls:HamburgerMenuItemCollection >
                         <Controls:HamburgerMenuIconItem Icon="{iconPacks:Material Kind=Home}" Label="主页">
                             <controls:HamburgerMenuIconItem.Tag>
                                 <MetroDemo.Page:Home></MetroDemo.Page:Home>

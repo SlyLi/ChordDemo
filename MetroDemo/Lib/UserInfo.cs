@@ -56,7 +56,7 @@ namespace MetroDemo.lib
         }
 
 
-        public Node AddDownloadNode(Node node)
+        public void AddDownloadNode(Node node)
         {
             Node localNode = null;
             foreach (var temp in DownloadNodes)
@@ -69,16 +69,19 @@ namespace MetroDemo.lib
                     {
                         localNode.AddSource(e.sourceIP, e.sourcePath);
                     }
-                    return localNode;
                 }
             }
-            foreach (var n in node.sources)
+
+            if (localNode == null)
+                DownloadNodes.Add(node);
+
+           /* foreach (var n in node.sources)
             {
                 if (n.sourceIP == GetLocalIP().ToString())
                 {
                     if(localNode==null)
                     {
-                        localNode = new Node(node.keyName, node.fileSize, n.sourcePath, node.fileType);
+                        localNode = node;
                     }
                     else
                     {
@@ -86,12 +89,9 @@ namespace MetroDemo.lib
 
                     }
                 }
-            }
-            if(localNode!=null)
-            {
-                DownloadNodes.Add(localNode);
-            }
-            return localNode;
+            }*/
+            
+           // return localNode;
         }
 
         public void AddUploadNode(Node node)
@@ -115,7 +115,6 @@ namespace MetroDemo.lib
             {
                 if (n.sourceIP == GetLocalIP().ToString())
                 {
-
                     if (localNode == null)
                     {
                         localNode = new Node(node.keyName, node.fileSize, n.sourcePath, node.fileType);

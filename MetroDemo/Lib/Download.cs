@@ -27,9 +27,8 @@ namespace MetroDemo.Lib
         public static void DownloadFile(Chord chord,UserInfo userInfo, Node node)
         {
             string filePath = userInfo.downloadPath + node.keyName + "." + node.fileType;
-            node.PrepareDownload();
             node.PrepareSources();
-            while (node.saveSize == node.fileSize && node.status==Node.NodeStatus.downloading)
+            while (node.saveSize != node.fileSize && node.status==Node.NodeStatus.downloading)
             {
                 for (int i = 0; i < node.blockNum; i++)
                 {
@@ -37,13 +36,17 @@ namespace MetroDemo.Lib
                     {
                         if (IsFileAvailable(node, node.blockSource[i]))
                         {
-                            SaveFile(i, node.blockSource[i], filePath);
+                            SaveFile(i, node, filePath);
                             node.blocks[i] = true;
                         }
 
                     }
+                    if (node.status != Node.NodeStatus.downloading)
+                        break;
                 }
+                
             }
+            
 
         }
 
@@ -84,16 +87,16 @@ namespace MetroDemo.Lib
             return false;
         }
 
-        public static void SaveFile(int i,Source source, string filePath)
+        public static void SaveFile(int i,Node node, string filePath)
         {
             FileStream fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
             TcpClient client = new TcpClient();
-            client.Connect(source.sourceIP, port);
+            client.Connect(node.blockSource[i].sourceIP, port);
             NetworkStream stream = client.GetStream();
             Datagram datagram = new Datagram
             {
                 Type = DatagramType.downloadFile,
-                Message = i.ToString() + " " + source.sourcePath 
+                Message = i.ToString() + "," + node.blockSource[i].sourcePath 
             };
             byte[] data = datagram.ToByte();
             stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
@@ -103,6 +106,10 @@ namespace MetroDemo.Lib
             int length = 0;
             int readSize = 0;
             fileStream.Seek((long)i * blockSize, SeekOrigin.Begin);
+            if(i==node.blockNum-1)
+            {
+                readSize = blockSize - (int)long.Parse(node.fileSize) % blockSize;
+            }
             while (readSize < blockSize)
             {
                 length = stream.Read(buffer, 0, buffer.Length);
@@ -118,6 +125,15 @@ namespace MetroDemo.Lib
 
         }
         #endregion
+        public static void DownloadPause(Node node)
+        {
+            node.DownloadStatusPause();
+        }
 
+        public static void DownloadContinue(Chord chord, UserInfo userInfo, Node node)
+        {
+            node.DownloadStatusContinue();
+            DownloadBegin(chord, userInfo, node);
+        }
     }
 }

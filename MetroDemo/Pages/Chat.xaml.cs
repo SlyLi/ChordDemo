@@ -29,11 +29,15 @@ namespace MetroDemo.Pages
         public Chat()
         {
             InitializeComponent();
+            
         }
 
         public void InitThis()
         {
-            chord.BindDsipBord(messageRecord);
+            if (chord != null )
+            {
+                chord.BindDsipBord(messageRecord);
+            }
         }
 
         private void Send_Click(object sender, RoutedEventArgs e)

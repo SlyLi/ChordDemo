@@ -24,12 +24,13 @@ namespace MetroDemo.lib
         public SourceIP local = new SourceIP(GetLocalIP().ToString());
         Nodes nodes = new Nodes();
         List<SourceIP> fingerTable = new List<SourceIP>(hashBit);
-        int port = Common.port;
         public IPAddress sucIP;   //后节点
         public IPAddress preIP;    //前节点
 
-        TcpListener server = null;
-        Thread listenThread=null;  
+        TcpListener server = new TcpListener(GetLocalIP(), port);
+         UdpClient udpListener = new UdpClient(udp_port);  //默认0.0.0.0 本机上的所有IPV4地址 主机
+        //UdpClient udpListener = new UdpClient(new IPEndPoint(GetLocalIP(),port));   //从机
+        Thread listenThread =null;  
         TextBlock msgRecord = null;
     
 
@@ -46,6 +47,7 @@ namespace MetroDemo.lib
             
          //   InitUserInfo();
             FreshFinTab();
+            Join();
 
         }
 
@@ -57,16 +59,22 @@ namespace MetroDemo.lib
         /// <summary>
         /// 监听所有连接进来的tcp请求，也就是接受消息并作出响应的反应
         /// </summary>
+        /// 
         private void ListenStart()
         {
-            IPAddress localAddr =GetLocalIP();
-            server = new TcpListener(localAddr, port);
             server.Start();
             listenThread = new Thread(Listen)
             {
                 IsBackground = true
             };
             listenThread.Start();
+
+            Thread udpThread = new Thread(UdpListener)
+            {
+                IsBackground = true
+            };
+            udpThread.Start(udpListener);
+
         }
 
         private void Listen()
@@ -77,9 +85,11 @@ namespace MetroDemo.lib
                 while(true)
                 {
                     client = server.AcceptTcpClient();
-                   // Display(client.Client.RemoteEndPoint.ToString());
-                    Thread thread = new Thread(ReceiveData);
-                    thread.IsBackground = true;
+                    // Display(client.Client.RemoteEndPoint.ToString());
+                    Thread thread = new Thread(ReceiveData)
+                    {
+                        IsBackground = true
+                    };
                     thread.Start(client);
                 }
                 
@@ -260,9 +270,15 @@ namespace MetroDemo.lib
                         fileStream.Seek((long)index * blockSize, SeekOrigin.Begin);
                         int readSize = 0;
                         int fileSize = 0;
-                        while(fileSize<blockSize)
+
+                        if(index == fileStream.Length/blockSize)
                         {
-                            ret = new byte[2048];
+                            fileSize = blockSize - (int)fileStream.Length % blockSize;
+                        }
+
+                        while (fileSize < blockSize ) 
+                        {
+                            ret = new byte[4096];
                             readSize = fileStream.Read(ret, 0, ret.Length);
                             stream.Write(ret, 0, readSize);
                             fileSize += readSize;
@@ -432,7 +448,7 @@ namespace MetroDemo.lib
                 Type = DatagramType.onChordPre,
                 Message = GetLocalIP().ToString(),
             };
-            SendDatagram(pre, datagram);
+            SendDatagram(suc, datagram);
            
             preIP = pre;
             sucIP = suc;
@@ -810,9 +826,9 @@ namespace MetroDemo.lib
                 Display(target.ToString() + "-----------------------------------------------infomation begin");
                 Display("IP:" + target.ToString() + "   SHA1：" + target.ToString().GetSha1Code());
                 IPAddress pre = GetTargetPre(target);
-                Display("IP:" + pre.ToString() + "   SHA1：" + pre.ToString().GetSha1Code());
+                Display("preIP:" + pre.ToString() + "   SHA1：" + pre.ToString().GetSha1Code());
                 IPAddress suc = GetTargetSuc(target);
-                Display("IP:" + suc.ToString() + "   SHA1：" + suc.ToString().GetSha1Code());
+                Display("sucIP:" + suc.ToString() + "   SHA1：" + suc.ToString().GetSha1Code());
 
                 Nodes nodes = GetNodesList(target);
                 foreach (var va in nodes)

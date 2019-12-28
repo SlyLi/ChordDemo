@@ -31,7 +31,10 @@ namespace MetroDemo.Pages
         }
         public void InitThis()
         {
-
+            if (chord != null)
+            {
+                chord.ShowHostList(usersList);
+            }
         }
 
         private void FreshHost_Click(object sender, RoutedEventArgs e)
