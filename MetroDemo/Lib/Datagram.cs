@@ -23,7 +23,7 @@ namespace MetroDemo.lib
         {
             get
             {
-                return ToByte().Length;
+                return ToBytes().Length;
             }
         }
         public DatagramType Type { set; get; }
@@ -34,9 +34,41 @@ namespace MetroDemo.lib
 
         public string Message { set; get; }
 
-        public int Length { set; get; }
+        public int Length { get { return Message.Length; } }
+
+        public byte[] ToBytes()
+        {
+            byte[] type = ((int)Type).GetBytes();
+            byte[] from = Encoding.UTF8.GetBytes(FromAddress);
+            byte[] to = Encoding.UTF8.GetBytes(ToAddress);
+            byte[] msg = Encoding.UTF8.GetBytes(Message);
+
+            byte[] all = new byte[msg.Length + 40 * 2 + 4];
+
+            Array.Copy(type, 0, all, 0, type.Length);
+            Array.Copy(from, 0, all, 4, from.Length);
+            Array.Copy(to, 0, all, 44, to.Length);
+            Array.Copy(msg, 0, all, 84, msg.Length);
+
+            return all;
+        }
+        public static Datagram Convert(byte[] bytes)  //内容格式化
+        {
+
+            Datagram data = new Datagram
+            {
+                Type = (DatagramType)BitConverter.ToInt32(bytes, 0),
+                FromAddress = (Encoding.UTF8.GetString(bytes, 4,40)).Replace("\0", ""),
+                ToAddress = (Encoding.UTF8.GetString(bytes, 44, 40)).Replace("\0", ""),
+                Message = Encoding.UTF8.GetString(bytes, 84, bytes.Length - 84),
+            };
+            return data;
+        }
 
 
+
+
+        /*
         public override string ToString()   //内容序列化
         {
             StringBuilder sb = new StringBuilder();
@@ -77,7 +109,6 @@ namespace MetroDemo.lib
                 data.ToAddress = idict["ToAddress"];
             if (idict.ContainsKey("Message"))
                 data.Message = idict["Message"];
-            data.Length = data.Message.Length;
 
             return data;
         }
@@ -86,7 +117,7 @@ namespace MetroDemo.lib
             string str = Encoding.BigEndianUnicode.GetString(bytes, 0, nums);
             return Convert(str);
         }
-
+        */
     }
 
     public enum DatagramType

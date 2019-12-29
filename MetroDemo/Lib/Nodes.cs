@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using static MetroDemo.lib.Common;
+using Newtonsoft.Json;
 
 namespace MetroDemo.lib
 {
@@ -35,6 +36,8 @@ namespace MetroDemo.lib
         }
         public override string ToString()
         {
+            return JsonConvert.SerializeObject(this);
+
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("{0}",location.ToString());
             foreach (var i in this)
@@ -48,6 +51,8 @@ namespace MetroDemo.lib
         {
             if (str == "")
                 return null;
+            else
+                return JsonConvert.DeserializeObject<Nodes>(str);
 
             string[] strs = str.Split('○');
             Nodes nodes = new Nodes(strs[0]);
@@ -62,7 +67,7 @@ namespace MetroDemo.lib
         }
     }
 
-
+    
     public class Node
     {
         public enum NodeStatus
@@ -101,19 +106,38 @@ namespace MetroDemo.lib
             fileType = type;
             blocks = blockStr.StringToBools();
         }
+        [JsonConstructor]
+        public Node(List<Source> s, string key, string size,string code, string type ) 
+        {
+            sources = s;
+            keyName = key;
+            fileSize = size;
+            sha1Code = code;
+            fileType = type;
+            
+        }
 
         public string keyName { set; get; }
-        public string fileSize {  get; }
-        public string sha1Code {  get; }
+        public string fileSize { set; get; }
+        public string sha1Code { set; get; }
         public string fileType { set; get; }
+
+        public List<Source> sources = null;
+        [JsonIgnoreAttribute]
         public NodeStatus status { private set; get; }
+
+        [JsonIgnoreAttribute]
         public Source[] blockSource = null;
+
+        [JsonIgnoreAttribute]
         public bool[] blocks = null;
 
-        public List<Source> sources = new List<Source>();
+        
 
+        [JsonIgnoreAttribute]
         public int blockNum => (int)Math.Ceiling((double)long.Parse(fileSize) / blockSize);
 
+        [JsonIgnoreAttribute]
         public string saveSize {
             get
             {
@@ -136,7 +160,7 @@ namespace MetroDemo.lib
             }
         }
 
-
+        [JsonIgnoreAttribute]
         public double progressValue
         {
             get
@@ -150,7 +174,10 @@ namespace MetroDemo.lib
             blockSource = new Source[blockNum];
             blocks = new bool[blockNum];
             for (int i = 0; i < blockNum; i++)
+            {
                 blocks[i] = false;
+             //   blockSource[i] = sources[0];
+            }
             status = NodeStatus.downloading;
         }
 
@@ -213,7 +240,7 @@ namespace MetroDemo.lib
                         Type = DatagramType.isFileAvailable,
                         Message = this.ToString()
                     };
-                    byte[] data = datagram.ToByte();
+                    byte[] data = datagram.ToBytes();
                     stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
                     stream.Write(data, 0, data.Length);
 
@@ -227,7 +254,7 @@ namespace MetroDemo.lib
                         readBytes = stream.Read(buffer, 0, buffer.Length);
                         if (readBytes == size)
                         {
-                            datagram = Datagram.Convert(buffer, size);
+                            datagram = Datagram.Convert(buffer);
 
                             if (datagram.Type == DatagramType.fileAvailable)
                             {
@@ -249,6 +276,8 @@ namespace MetroDemo.lib
 
         public void AddSource(string ip,string path)
         {
+            if (sources == null)
+                sources = new List<Source>();
             Source source = new Source
             {
                 sourceIP = ip,
@@ -269,49 +298,17 @@ namespace MetroDemo.lib
 
         public override string ToString()
         {
-            StringBuilder sourcesSb = new StringBuilder();
-            foreach (var s in sources)
-            {
-                sourcesSb.AppendFormat("{0}■{1}■",s.sourceIP,s.sourcePath);
-            }
+            return JsonConvert.SerializeObject(this);
 
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendFormat("keyName▷{0}◁", keyName);
-            sb.AppendFormat("fileSize▷{0}◁", fileSize);
-            sb.AppendFormat("fileType▷{0}◁", fileType);
-            sb.AppendFormat("sources▷{0}◁", sourcesSb);
-            sb.AppendFormat("blocks▷{0}", blocks.BoolsToString());
-
-            return sb.ToString();
         }
 
         public static Node Convert(string str)
         {
-            IDictionary<string, string> idict = new Dictionary<string, string>();
-
-            string[] strlist = str.Split('◁');
-            for (int i = 0; i < strlist.Length; i++)
-            {
-                string[] info = strlist[i].Split('▷');
-                idict.Add(info[0], info[1]);
-            }
-            Node node;
-            if (idict["blocks"]=="")
-            {
-                node = new Node(idict["keyName"], idict["fileSize"], idict["fileType"]);
-            }
+            if (str == "")
+                return null;
             else
-            {
-                node = new Node(idict["keyName"], idict["fileSize"], idict["fileType"], idict["blocks"], 1);
-            }
-
-            string[] sourcesRow = idict["sources"].Split('■');
-            for(int i=0;i<sourcesRow.Length/2;i++)
-            {
-                node.sources.Add(new Source(sourcesRow[2*i], sourcesRow[2*i + 1]));
-            }
-            return node;
+                return JsonConvert.DeserializeObject<Node>(str );
+            
         }
     }
 }

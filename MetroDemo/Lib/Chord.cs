@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define HEAD
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,8 +30,11 @@ namespace MetroDemo.lib
         public IPAddress preIP;    //前节点
 
         TcpListener server = new TcpListener(GetLocalIP(), port);
-         UdpClient udpListener = new UdpClient(udp_port);  //默认0.0.0.0 本机上的所有IPV4地址 主机
-        //UdpClient udpListener = new UdpClient(new IPEndPoint(GetLocalIP(),port));   //从机
+#if (HEAD)
+        UdpClient udpListener = new UdpClient(udp_port);  //默认0.0.0.0 本机上的所有IPV4地址 主机
+#else
+        UdpClient udpListener = new UdpClient(new IPEndPoint(GetLocalIP(),port));   //从机
+#endif
         Thread listenThread =null;  
         TextBlock msgRecord = null;
     
@@ -55,7 +60,7 @@ namespace MetroDemo.lib
        
 
 
-        #region Listen
+#region Listen
         /// <summary>
         /// 监听所有连接进来的tcp请求，也就是接受消息并作出响应的反应
         /// </summary>
@@ -115,7 +120,7 @@ namespace MetroDemo.lib
                 do
                 {
                     int readBytes = 0;
-                    Byte[] buffer = new Byte[intToByteLength];
+                    byte[] buffer = new Byte[intToByteLength];
                     stream.Read(buffer, 0, buffer.Length);
                     int size = BitConverter.ToInt32(buffer, 0);
 
@@ -123,7 +128,7 @@ namespace MetroDemo.lib
                     readBytes = stream.Read(buffer, 0, buffer.Length);
                     if (readBytes == size)
                     {
-                        Datagram datagram = Datagram.Convert(buffer, size);
+                        Datagram datagram = Datagram.Convert(buffer);
                         Display(datagram.Type + " : " + datagram.Message);
                         Execute(datagram, stream);
                     }
@@ -135,7 +140,7 @@ namespace MetroDemo.lib
                 while (stream.DataAvailable);              
             }
         }
-        #endregion
+#endregion
 
         /// <summary>
         /// 对消息的执行。
@@ -159,7 +164,7 @@ namespace MetroDemo.lib
                         Message = sucIP.ToString(),
                         
                     };
-                    ret = retDatagram.ToByte();
+                    ret = retDatagram.ToBytes();
                     stream.Write(retDatagram.AllSize.GetBytes(),0,intToByteLength);
                     stream.Write(ret, 0, ret.Length);
                     break;
@@ -170,7 +175,7 @@ namespace MetroDemo.lib
                         Message = preIP.ToString(),
 
                     };
-                    ret = retDatagram.ToByte();
+                    ret = retDatagram.ToBytes();
                     stream.Write(retDatagram.AllSize.GetBytes(), 0, intToByteLength);
                     stream.Write(ret, 0, ret.Length);
                     break;
@@ -241,7 +246,7 @@ namespace MetroDemo.lib
                     {
                         Message = GetNodePostion(Node.Convert(datagram.Message))
                     };
-                    ret = retDatagram.ToByte();
+                    ret = retDatagram.ToBytes();
                     stream.Write(retDatagram.AllSize.GetBytes(), 0, intToByteLength);
                     stream.Write(ret, 0, ret.Length);
                     break;
@@ -251,7 +256,7 @@ namespace MetroDemo.lib
                         Type = DatagramType.retNodesList,
                         Message = nodes.ToString()
                     };
-                    ret = retDatagram.ToByte();
+                    ret = retDatagram.ToBytes();
                     stream.Write(retDatagram.AllSize.GetBytes(), 0, intToByteLength);
                     stream.Write(ret, 0, ret.Length);
                     break;
@@ -315,7 +320,7 @@ namespace MetroDemo.lib
                         }
                     }
 
-                    ret = retDatagram.ToByte();
+                    ret = retDatagram.ToBytes();
                     stream.Write(retDatagram.AllSize.GetBytes(), 0, intToByteLength);
                     stream.Write(ret, 0, ret.Length);
                     break;
@@ -329,7 +334,7 @@ namespace MetroDemo.lib
                     {
                         Message = fingerTable.TabToString(),
                     };
-                    ret = retDatagram.ToByte();
+                    ret = retDatagram.ToBytes();
                     stream.Write(retDatagram.AllSize.GetBytes(), 0, intToByteLength);
                     stream.Write(ret, 0, ret.Length);
                     break;
@@ -409,7 +414,7 @@ namespace MetroDemo.lib
             }
         }
 
-        #region 加入和退出
+#region 加入和退出
         void JoinChord(IPAddress pre, IPAddress suc)
         {
             Nodes lists = GetNodesList(suc);
@@ -486,9 +491,9 @@ namespace MetroDemo.lib
             };
             SendDatagram(preIP, datagram);
         }
-        #endregion
+#endregion
 
-        #region IDisposable Support
+#region IDisposable Support
         private bool disposedValue = false; // 要检测冗余调用
 
         protected virtual void Dispose(bool disposing)
@@ -523,7 +528,7 @@ namespace MetroDemo.lib
             // TODO: 如果在以上内容中替代了终结器，则取消注释以下行。
              GC.SuppressFinalize(this);
         }
-        #endregion
+#endregion
  
 
         private void FreshFinTab()
@@ -598,7 +603,7 @@ namespace MetroDemo.lib
             }
         }
 
-        #region 节点资源相关
+#region 节点资源相关
 
         void InsertNode(string ip,Node node)
         {
@@ -685,7 +690,7 @@ namespace MetroDemo.lib
                 Type = DatagramType.getNodePosition,
                 Message = node.ToString()
             };
-            byte[] vs = datagram.ToByte();
+            byte[] vs = datagram.ToBytes();
             stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
             stream.Write(vs, 0, vs.Length);
 
@@ -699,7 +704,7 @@ namespace MetroDemo.lib
                 readBytes = stream.Read(buffer, 0, buffer.Length);
                 if (readBytes == size)
                 {
-                    datagram = Datagram.Convert(buffer, size);
+                    datagram = Datagram.Convert(buffer);
                     retStr = datagram.Message;
 
                 }
@@ -752,7 +757,7 @@ namespace MetroDemo.lib
 
             return "";
         }
-        #endregion
+#endregion
 
 
         public void BindDsipBord(TextBlock textBlock)
@@ -771,7 +776,7 @@ namespace MetroDemo.lib
             }
         }
 
-        #region 前台显示函数
+#region 前台显示函数
         public void ShowHostList(ListView listView)
         {
 
@@ -846,6 +851,6 @@ namespace MetroDemo.lib
             Display(preIP.ToString());
             Display(sucIP.ToString());
         }
-        #endregion
+#endregion
     }
 }

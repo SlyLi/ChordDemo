@@ -60,7 +60,7 @@ namespace MetroDemo.Lib
                 Type = DatagramType.isFileAvailable,
                 Message = node.ToString()
             };
-            byte[] data = datagram.ToByte();
+            byte[] data = datagram.ToBytes();
             stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
             stream.Write(data, 0, data.Length);
 
@@ -74,7 +74,7 @@ namespace MetroDemo.Lib
                 readBytes = stream.Read(buffer, 0, buffer.Length);
                 if (readBytes == size)
                 {
-                    datagram = Datagram.Convert(buffer, size);
+                    datagram = Datagram.Convert(buffer);
 
                     if (datagram.Type == DatagramType.fileAvailable)
                     {
@@ -98,7 +98,7 @@ namespace MetroDemo.Lib
                 Type = DatagramType.downloadFile,
                 Message = i.ToString() + "," + node.blockSource[i].sourcePath 
             };
-            byte[] data = datagram.ToByte();
+            byte[] data = datagram.ToBytes();
             stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
             stream.Write(data, 0, data.Length);
             byte[] buffer = new byte[1024];

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define HEAD
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,8 +11,11 @@ using System.Windows.Controls;
 using System.IO;
 using System.Threading;
 
+
+
 namespace MetroDemo.lib
 {
+    
     public struct SourceIP
     {
         public SourceIP(string str)
@@ -44,15 +49,22 @@ namespace MetroDemo.lib
                // if (ip.ToString().Substring(0, 3) == "172") //学校局域网。测试
                //     return ip;
             }
+#if (HEAD)
             return IPAddress.Parse("127.0.0.1");
+#else
+            return IPAddress.Parse("127.0.0.2");
+#endif
         }
 
         public static IPAddress GetTargetIP()       //暂时如此 待改进
         {
+
             IPAddress targetIP = GetLocalIP();
+
+#if (HEAD)
             //IPAddress targetIP = IPAddress.Parse("172.19.151.89");
             return targetIP;    //主机
-
+#else
             //从机 以下所有
 
             //Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram,ProtocolType.Udp);
@@ -65,7 +77,7 @@ namespace MetroDemo.lib
             {
                 Type = DatagramType.whoIsActive
             };
-            byte[] data = retDatagram.ToByte();
+            byte[] data = retDatagram.ToBytes();
             listener.Send(retDatagram.AllSize.GetBytes(), retDatagram.AllSize.GetBytes().Length, ep);
             listener.Send(data,data.Length, ep);
 
@@ -84,7 +96,7 @@ namespace MetroDemo.lib
                     buffer = listener.Receive(ref groupEP);
                     if (buffer.Length == size)
                     {
-                        datagram = Datagram.Convert(buffer, size);
+                        datagram = Datagram.Convert(buffer);
                         if (datagram.Type == DatagramType.acticeHost)
                         {
                             if(datagram.FromAddress!=GetLocalIP().ToString())
@@ -121,6 +133,7 @@ namespace MetroDemo.lib
               }
               return host.AddressList[0];*/
             return targetIP;
+#endif
         }
 
         public static void UdpListener(object o)
@@ -142,14 +155,14 @@ namespace MetroDemo.lib
                     buffer = listener.Receive(ref newEP);
                     if(buffer.Length==size)
                     {
-                        datagram = Datagram.Convert(buffer, size);
+                        datagram = Datagram.Convert(buffer);
                         if(datagram.Type== DatagramType.whoIsActive)
                         {
                             retDatagram = new Datagram
                             {
                                 Type = DatagramType.acticeHost
                             };
-                            data = retDatagram.ToByte();
+                            data = retDatagram.ToBytes();
                             listener.Send(retDatagram.AllSize.GetBytes(), intToByteLength, newEP);
                             listener.Send(data, data.Length, newEP);
                         }
@@ -170,7 +183,7 @@ namespace MetroDemo.lib
 
 
 
-        #region 辅助
+#region 辅助
 
         public static void Display(string str,TextBlock msgRecord)
         {
@@ -192,7 +205,7 @@ namespace MetroDemo.lib
             client.Connect(target, port);
             NetworkStream stream = client.GetStream();
 
-            byte[] data = datagram.ToByte();
+            byte[] data = datagram.ToBytes();
             stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
             stream.Write(data, 0, data.Length);
 
@@ -210,7 +223,7 @@ namespace MetroDemo.lib
             client.Connect(targetIP, port);
             NetworkStream stream = client.GetStream();
 
-            byte[] data = datagram.ToByte();
+            byte[] data = datagram.ToBytes();
 
             stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
             stream.Write(data, 0, data.Length);
@@ -225,7 +238,7 @@ namespace MetroDemo.lib
                 readBytes = stream.Read(buffer, 0, buffer.Length);
                 if (readBytes == size)
                 {
-                    datagram = Datagram.Convert(buffer, size);
+                    datagram = Datagram.Convert(buffer);
                     if (datagram.Type == DatagramType.returnSuc)
                     {
                         client.Close();
@@ -255,7 +268,7 @@ namespace MetroDemo.lib
             client.Connect(targetIP, port);
             NetworkStream stream = client.GetStream();
 
-            byte[] data = datagram.ToByte();
+            byte[] data = datagram.ToBytes();
             stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
             stream.Write(data, 0, data.Length);
             if (stream.CanRead)
@@ -268,7 +281,7 @@ namespace MetroDemo.lib
                 readBytes = stream.Read(buffer, 0, buffer.Length);
                 if (readBytes == size)
                 {
-                    datagram = Datagram.Convert(buffer, size);
+                    datagram = Datagram.Convert(buffer);
                     if (datagram.Type == DatagramType.returnPre)
                     {
                         client.Close();
@@ -286,7 +299,7 @@ namespace MetroDemo.lib
             return GetTargetPre(IPAddress.Parse(tar)).ToString();
         }
 
-        #endregion
+#endregion
 
         public static Nodes GetNodesList(IPAddress target)
         {
@@ -298,7 +311,7 @@ namespace MetroDemo.lib
             client.Connect(target, port);
             NetworkStream stream = client.GetStream();
 
-            byte[] data = datagram.ToByte();
+            byte[] data = datagram.ToBytes();
             stream.Write(datagram.AllSize.GetBytes(), 0, intToByteLength);
             stream.Write(data, 0, data.Length);
             if (stream.CanRead)
@@ -311,7 +324,7 @@ namespace MetroDemo.lib
                 readBytes = stream.Read(buffer, 0, buffer.Length);
                 if (readBytes == size)
                 {
-                    datagram = Datagram.Convert(buffer, size);
+                    datagram = Datagram.Convert(buffer);
                     if (datagram.Type == DatagramType.retNodesList)
                     {
                         client.Close();
@@ -336,9 +349,8 @@ namespace MetroDemo.lib
             }
         }
 
-
-
        
+
 
     }
 }
