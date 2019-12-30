@@ -14,6 +14,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using MahApps.Metro.Controls;
+using MetroDemo.Pages;
+using MahApps.Metro.Controls.Dialogs;
+
 using static MetroDemo.Lib.Download;
 namespace MetroDemo.Pages
 {
@@ -52,9 +56,19 @@ namespace MetroDemo.Pages
             Node node = o as Node;
             node.DownloadInit();
             userInfo.AddDownloadNode(node);
-
             DownloadBegin(chord,userInfo,node);
-            //  chord.DownloadFile(node);
+
+            /*  //页面跳转
+            var ancestor = this.GetAncestors();
+            var main_window = ancestor.Last();
+            var HamburgerMenuControl = main_window.FindChild<HamburgerMenu>("HamburgerMenuControl");
+            HamburgerMenuItemCollection pages = HamburgerMenuControl.ItemsSource as HamburgerMenuItemCollection;
+            HamburgerMenuControl.SelectedIndex = 5;
+            HamburgerMenuControl.Content = pages[5];
+            Downloads page = ((HamburgerMenuIconItem)HamburgerMenuControl.Content).Tag as Downloads;
+            page.FreshDownload();
+            */
+
         }
 
         private void sourcesList_MouseDoubleClick(object sender, MouseButtonEventArgs e)

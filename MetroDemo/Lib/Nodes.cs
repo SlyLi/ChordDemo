@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using static MetroDemo.lib.Common;
 using Newtonsoft.Json;
+using System.ComponentModel;
 
 namespace MetroDemo.lib
 {
@@ -38,13 +39,6 @@ namespace MetroDemo.lib
         {
             return JsonConvert.SerializeObject(this);
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{0}",location.ToString());
-            foreach (var i in this)
-            {
-                sb.AppendFormat("○{0}", i.ToString());
-            }
-            return sb.ToString();
         }
 
         public static Nodes Convent(string str)
@@ -54,21 +48,11 @@ namespace MetroDemo.lib
             else
                 return JsonConvert.DeserializeObject<Nodes>(str);
 
-            string[] strs = str.Split('○');
-            Nodes nodes = new Nodes(strs[0]);
-            
-            foreach(var s in strs)
-            {
-                if (s == strs[0])
-                    continue;
-                nodes.Add(Node.Convert(s));
-            }
-            return nodes;
         }
     }
 
     
-    public class Node
+    public class Node : INotifyPropertyChanged
     {
         public enum NodeStatus
         {
@@ -107,32 +91,30 @@ namespace MetroDemo.lib
             blocks = blockStr.StringToBools();
         }
         [JsonConstructor]
-        public Node(List<Source> s, string key, string size,string code, string type ) 
+        public Node(List<Source> sou, bool[] blo,string key, string size,string code, string type ,NodeStatus sta) 
         {
-            sources = s;
+            sources = sou;
+            blocks = blo;
             keyName = key;
             fileSize = size;
             sha1Code = code;
             fileType = type;
+            status = sta;
             
         }
+        public List<Source> sources = null;
+        public bool[] blocks = null;
 
         public string keyName { set; get; }
         public string fileSize { set; get; }
         public string sha1Code { set; get; }
         public string fileType { set; get; }
 
-        public List<Source> sources = null;
-        [JsonIgnoreAttribute]
-        public NodeStatus status { private set; get; }
+
+        public NodeStatus status { set;get;}
 
         [JsonIgnoreAttribute]
         public Source[] blockSource = null;
-
-        [JsonIgnoreAttribute]
-        public bool[] blocks = null;
-
-        
 
         [JsonIgnoreAttribute]
         public int blockNum => (int)Math.Ceiling((double)long.Parse(fileSize) / blockSize);
@@ -152,6 +134,7 @@ namespace MetroDemo.lib
                 if (done == blockNum)
                 {
                     status = NodeStatus.downloaded;
+                    OnPropertyChanged("status");
                     return fileSize;
                 }
                 else
@@ -167,6 +150,7 @@ namespace MetroDemo.lib
             {
                 return long.Parse(saveSize) * 100 / long.Parse(fileSize);
             }
+            
         }
        
         public void DownloadInit()
@@ -179,6 +163,7 @@ namespace MetroDemo.lib
              //   blockSource[i] = sources[0];
             }
             status = NodeStatus.downloading;
+            OnPropertyChanged("status");
         }
 
 
@@ -194,6 +179,7 @@ namespace MetroDemo.lib
             if(count==0)
             {
                 status = NodeStatus.noSource;
+                OnPropertyChanged("status");
             }
             else
             {
@@ -210,10 +196,12 @@ namespace MetroDemo.lib
         public void DownloadStatusContinue()
         {
             status = NodeStatus.downloading;
+            OnPropertyChanged("status");
         }
         public void DownloadStatusPause()
         {
             status = NodeStatus.pause;
+            OnPropertyChanged("status");
         }
 
 
@@ -309,6 +297,12 @@ namespace MetroDemo.lib
             else
                 return JsonConvert.DeserializeObject<Node>(str );
             
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

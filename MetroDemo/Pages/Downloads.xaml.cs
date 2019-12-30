@@ -1,6 +1,7 @@
 ﻿using MetroDemo.lib;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -36,6 +37,9 @@ namespace MetroDemo.Pages
             thread.Start();
 
         }
+
+        
+
         public void InitThis()
         {
             if(chord!=null)
@@ -46,8 +50,8 @@ namespace MetroDemo.Pages
         }
         void FreshInterface()
         {
-            while (chord == null);
-            while(true)
+            while (chord == null); 
+            while(false)          //更改刷新方法，改进
             {
                 Thread.Sleep(100);
                 DownloadList.Dispatcher.Invoke(() =>
@@ -84,6 +88,8 @@ namespace MetroDemo.Pages
             Node node = o as Node;
             DownloadPause(node);
             
+
+
         }
 
         private void ContinueDownload_Click(object sender, RoutedEventArgs e)
@@ -93,6 +99,7 @@ namespace MetroDemo.Pages
                 return;
             Node node = o as Node;
             DownloadContinue(chord, userInfo, node);
+
 
         }
 

@@ -24,11 +24,11 @@
                         <GridViewColumn Width="80" DisplayMemberBinding="{Binding fileSize}" Header="大小(Byte)" />
                         <GridViewColumn Width="50" DisplayMemberBinding="{Binding fileType}" Header="类型" />
                         <GridViewColumn Width="300" DisplayMemberBinding="{Binding sha1Code}" Header="SHA1" />
-                        <GridViewColumn Width="100" DisplayMemberBinding="{Binding status}" Header="状态" />
+                        <GridViewColumn Width="100" DisplayMemberBinding="{Binding status }" Header="状态" />
                         <GridViewColumn Width="120"  Header="进度">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate >
-                                    <ProgressBar Value="{Binding progressValue, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"></ProgressBar>
+                                    <ProgressBar Value="{Binding progressValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></ProgressBar>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
 

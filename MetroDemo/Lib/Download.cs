@@ -38,6 +38,7 @@ namespace MetroDemo.Lib
                         {
                             SaveFile(i, node, filePath);
                             node.blocks[i] = true;
+                            node.OnPropertyChanged("progressValue");
                         }
 
                     }
