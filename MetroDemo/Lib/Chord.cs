@@ -52,7 +52,6 @@ namespace MetroDemo.lib
             
          //   InitUserInfo();
             FreshFinTab();
-            Join();
 
         }
 
@@ -461,7 +460,7 @@ namespace MetroDemo.lib
         }
      
 
-        void Leave()
+        public void Leave()
         {
             if (preIP.ToString() == GetLocalIP().ToString() && sucIP.ToString() == GetLocalIP().ToString())
             {

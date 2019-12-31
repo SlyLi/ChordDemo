@@ -43,6 +43,8 @@
                         </MenuItem>
                         <MenuItem Header="继续下载" Click="ContinueDownload_Click">
                         </MenuItem>
+                        <MenuItem Header="打开所在文件夹" Click="OpenFileDirectory_Click">
+                        </MenuItem>
                     </ContextMenu>
                 </ListView.ContextMenu>
                 

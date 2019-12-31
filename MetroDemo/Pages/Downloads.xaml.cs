@@ -102,6 +102,17 @@ namespace MetroDemo.Pages
 
 
         }
+        private void OpenFileDirectory_Click(object sender, RoutedEventArgs e)
+        {
+            object o = DownloadList.SelectedItem;
+            if (o == null)
+                return;
+            Node node = o as Node;
+            System.Diagnostics.Process.Start("Explorer",
+                "/select," + userInfo.downloadPath + node.keyName + "." + node.fileType);
+
+
+        }
 
 
     }

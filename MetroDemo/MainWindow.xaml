@@ -11,37 +11,21 @@
                     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                     xmlns:MetroDemo.Page="clr-namespace:MetroDemo.Pages"
                     mc:Ignorable="d"
+        GlowBrush="{DynamicResource AccentColorBrush}"
+        d:DataContext="{d:DesignInstance MetroDemo:MainWindowViewModel}"
+           
     Icon="Icons/equal.ico"
     WindowStartupLocation="CenterScreen"
-                       
-                       
-        Title="众生平等" Height="540" Width="960">
-    
-    <controls:MetroWindow.RightWindowCommands>
-        <controls:WindowCommands>
-            <Button>
-                <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="20"
-                   Height="20"
-                   Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
-                    </Rectangle>
-                    <TextBlock Margin="4 0 0 0"
-                   VerticalAlignment="Center"
-                   Text="deploy cupcakes" />
-                </StackPanel>
-            </Button>
-            <Button Content="关于" />
-        </controls:WindowCommands>
-    </controls:MetroWindow.RightWindowCommands>
+    Title="众生平等" Height="540" Width="960">
 
 
     <controls:MetroWindow.Resources>
         <ResourceDictionary>
+
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Themes/HamburgerMenuTemplate.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
-
             <!--  This is the template for the menu items.  -->
             <DataTemplate x:Key="MenuItemTemplate" DataType="{x:Type Controls:HamburgerMenuIconItem}">
                 <Grid Height="48">
@@ -105,9 +89,78 @@
                 <Setter Property="ShowSelectionIndicator" Value="True" />
             </Style>
 
+            <Ellipse x:Key="AppThemeMenuIcon"
+                     Width="16"
+                     Height="16"
+                     x:Shared="False"
+                     Fill="{Binding ColorBrush, Mode=OneWay}"
+                     Stroke="{Binding BorderColorBrush, Mode=OneWay}"
+                     StrokeThickness="1" />
+            <Ellipse x:Key="AccentMenuIcon"
+                     Width="16"
+                     Height="16"
+                     x:Shared="False"
+                     Fill="{Binding ColorBrush, Mode=OneWay}" />
+
+            
+            
+            <Style x:Key="AppThemeMenuItemStyle"
+                   BasedOn="{StaticResource MetroMenuItem}"
+                   TargetType="{x:Type MenuItem}">
+                <Setter Property="Command" Value="{Binding ChangeAccentCommand}" />
+                <Setter Property="Header" Value="{Binding Name, Mode=OneWay}" />
+                <Setter Property="Icon" Value="{StaticResource AppThemeMenuIcon}" />
+            </Style>
+
+            <Style x:Key="AccentColorMenuItemStyle"
+                   BasedOn="{StaticResource MetroMenuItem}"
+                   TargetType="{x:Type MenuItem}">
+                <Setter Property="Command" Value="{Binding ChangeAccentCommand}" />
+                <Setter Property="Header" Value="{Binding Name, Mode=OneWay}" />
+                <Setter Property="Icon" Value="{StaticResource AccentMenuIcon}" />
+            </Style>
+
         </ResourceDictionary>
     </controls:MetroWindow.Resources>
+    
+    
+    <Controls:MetroWindow.LeftWindowCommands>
+        <Controls:WindowCommands>
+            <Button  ToolTip="MahApps.Metro on GitHub">
+                <iconPacks:PackIconModern Width="22"
+                                          Height="22"
+                                          Kind="SocialGithubOctocat" />
+            </Button>
+        </Controls:WindowCommands>
+    </Controls:MetroWindow.LeftWindowCommands>
 
+    <controls:MetroWindow.RightWindowCommands>
+        <controls:WindowCommands>
+            <Button>
+                <Menu>
+                    <MenuItem Header="Theme" 
+                      ItemContainerStyle="{StaticResource AppThemeMenuItemStyle}"
+                      ItemsSource="{Binding AppThemes, Mode=OneWay}" />
+                    <MenuItem Header="Accent"
+                      ItemContainerStyle="{StaticResource AccentColorMenuItemStyle}"
+                      ItemsSource="{Binding AccentColors, Mode=OneWay}" />
+                </Menu>
+            </Button>
+            
+            <Button Click="About_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Rectangle Width="20"
+                   Height="20"
+                   Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
+                    </Rectangle>
+                    <TextBlock Margin="4 0 0 0"
+                   VerticalAlignment="Center"
+                   Text="关于" />
+                </StackPanel>
+            </Button>
+            <Button Content="Sly Li" Click="SlyLi_Click"/>
+        </controls:WindowCommands>
+    </controls:MetroWindow.RightWindowCommands>
 
 
     <Grid >

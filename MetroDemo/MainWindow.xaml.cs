@@ -16,9 +16,11 @@ using MahApps.Metro.Controls;
 using MetroDemo.Pages;
 using MetroDemo.lib;
 using MahApps.Metro.Controls.Dialogs;
+using MahApps.Metro;
 
 namespace MetroDemo
 {
+
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
@@ -26,6 +28,7 @@ namespace MetroDemo
     {
         public Chord chord { set; get; }
         public UserInfo userInfo { set; get; }
+        private readonly MainWindowViewModel _viewModel;
         public MainWindow()
         {
             chord = new Chord();
@@ -34,6 +37,16 @@ namespace MetroDemo
   
             InitializeComponent();
             InitPages();
+            _viewModel = new MainWindowViewModel(DialogCoordinator.Instance);
+            DataContext = _viewModel;
+
+        }
+
+        public MainWindow(int i)
+        {
+            InitializeComponent();
+            InitPages();
+
         }
 
         private void InitPages()
@@ -52,7 +65,8 @@ namespace MetroDemo
                     page_tag.InitThis();
                 }
             }
-                
+            HamburgerMenuControl.Content = pages[0];
+
         }
 
 
@@ -66,6 +80,34 @@ namespace MetroDemo
             }
        
         }
+        
+        private void SlyLi_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://blog.slyli.cn");
+        }
 
+        private MetroWindow about_window;
+        private void About_Click(object sender, RoutedEventArgs e)
+        {
+            if (about_window != null)
+            {
+                about_window.Close();
+            }
+            about_window = new MetroWindow() { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner, Title = "About this!", Width = 500, Height = 300 };
+            about_window.Closed += (o, args) => about_window = null;
+            about_window.Content = new TextBlock() { Text = "MetroWindow with Border", FontSize = 28, FontWeight = FontWeights.Light, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+            
+            //边框阴影效果
+            about_window.SetCurrentValue(BorderThicknessProperty, new Thickness(0));
+            about_window.SetCurrentValue(BorderBrushProperty, null);
+            about_window.SetCurrentValue(GlowBrushProperty, Brushes.Black);
+
+           // about_window.BorderThickness = new Thickness(0, 0, 0, 0);// 无边框
+            //  about_window = new MainWindow(1) { Title = "About this!", Width = 500, Height = 300 };  //俄罗斯套娃
+
+            about_window.Show();
+
+         
+        }
     }
 }
