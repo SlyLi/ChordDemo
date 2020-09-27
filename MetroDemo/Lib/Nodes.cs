@@ -49,6 +49,28 @@ namespace MetroDemo.lib
                 return JsonConvert.DeserializeObject<Nodes>(str);
 
         }
+
+        public void Insert(Node node)
+        {
+            if (node == null)
+                return;
+
+            Node localNode = null;
+            foreach (var temp in this)
+            {
+                if (temp.sha1Code == node.sha1Code)
+                {
+                    localNode = temp;
+                    var exp = node.sources.Where(a => !temp.sources.Exists(t => a.sourceIP == t.sourceIP && a.sourcePath == t.sourcePath)).ToList();
+                    foreach (var e in exp)
+                    {
+                        localNode.AddSource(e.sourceIP, e.sourcePath);
+                    }
+                }
+            }
+            if (localNode == null)
+                this.Add(node);
+        }
     }
 
     
@@ -274,7 +296,7 @@ namespace MetroDemo.lib
             sources.Add(source);
         }
 
-        public void UpdateNodeSources(List<Source> s)
+        public void UpdateNodeSources(List<Source> s)   //用新的source代替旧的source
         {
             sources = new List<Source>(s);
         }

@@ -50,7 +50,6 @@ namespace MetroDemo.lib
                 fingerTable.Add(local);
             }
             
-         //   InitUserInfo();
             FreshFinTab();
 
         }
@@ -225,7 +224,7 @@ namespace MetroDemo.lib
                     Nodes lists = Nodes.Convent(datagram.Message);
                     foreach(var te in lists)
                     {
-                        nodes.Add(te);
+                        nodes.Insert(te);
                     }
                     break;
                 case DatagramType.chatAll:
@@ -424,7 +423,7 @@ namespace MetroDemo.lib
                 {
                     if(local.sha1Code.CompareTo(temp.sha1Code)>=0)
                     {
-                        nodes.Add(temp);
+                        nodes.Insert(temp);
                     }
                 }
             }
@@ -434,7 +433,7 @@ namespace MetroDemo.lib
                 {
                     if (local.sha1Code.CompareTo(temp.sha1Code) >= 0 ||temp.sha1Code.CompareTo(pre.ToString().GetSha1Code())>0)
                     {
-                        nodes.Add(temp);
+                        nodes.Insert(temp);
                     }
                 }
             }
@@ -473,7 +472,6 @@ namespace MetroDemo.lib
             };
             SendDatagram(sucIP, datagram);
 
-
             datagram = new Datagram
             {
                 Type = DatagramType.offChordPre,
@@ -481,14 +479,16 @@ namespace MetroDemo.lib
             };
             SendDatagram(sucIP, datagram);
 
-           
-
             datagram = new Datagram
             {
                 Type = DatagramType.offChordSuc,
                 Message = sucIP.ToString(),
             };
             SendDatagram(preIP, datagram);
+
+
+            sucIP = GetLocalIP();
+            preIP = GetLocalIP();
         }
 #endregion
 

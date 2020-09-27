@@ -11,8 +11,6 @@ namespace MetroDemo.lib
     public class UserInfo : IDisposable
     {
 
-       
-
         public string downloadPath;
         public List<string> targetIPs;
         public Nodes DownloadNodes;

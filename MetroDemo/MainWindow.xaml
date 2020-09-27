@@ -10,6 +10,7 @@
                     xmlns:converters="http://metro.mahapps.com/winfx/xaml/shared"
                     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                     xmlns:MetroDemo.Page="clr-namespace:MetroDemo.Pages"
+                    xmlns:MetroDemo="clr-namespace:MetroDemo"
                     mc:Ignorable="d"
         GlowBrush="{DynamicResource AccentColorBrush}"
         d:DataContext="{d:DesignInstance MetroDemo:MainWindowViewModel}"
